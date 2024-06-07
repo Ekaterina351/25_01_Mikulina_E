@@ -2,6 +2,8 @@ package footprints;
 
 import footprints.criterion.*;
 import footprints.field.*;
+import footprints.items.Key;
+import footprints.seeder.DifferentKeysSeeder;
 import footprints.seeder.Seeder;
 import footprints.seeder.SimpleSeeder;
 import footprints.ui.*;
@@ -10,6 +12,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.List;
 
 public class Main {
 
@@ -42,23 +45,40 @@ public class Main {
             JOptionPane.showMessageDialog(null,
                     "Чтобы победить: " + _winCriterion.message());
         }
-
+//Новый порядок создания критериев
         private void gameInit() {
-            KeysCollectedCriterion allKeys = new KeysCollectedCriterion();
+            // KeysCollectedCriterion allKeys = new KeysCollectedCriterion();
             PlayerOnTargetCellCriterion playerOnTargetCell = new PlayerOnTargetCellCriterion();
             CannotMoveAnywhereCriterion cannotMove = new CannotMoveAnywhereCriterion();
+            SpecifiedKeysMustStayCriterion keysMustStay = new SpecifiedKeysMustStayCriterion();
 
-            _winCriterion = new AndCriterion(allKeys, playerOnTargetCell);
-            _loseCriterion = cannotMove;
-
-            Seeder seeder = new SimpleSeeder();
-            _game = new Game(_winCriterion, _loseCriterion, seeder);
+            DifferentKeysSeeder seeder = new DifferentKeysSeeder();
             _field = seeder.getField();
 
-            allKeys.setPlayer(_game.getPlayer());
-            allKeys.setKeysCount(seeder.getField().getRemainingKeys().size());
-            playerOnTargetCell.setPlayer(_game.getPlayer());
-            cannotMove.setPlayer(_game.getPlayer());
+            playerOnTargetCell.setPlayer(seeder.getPlayer());
+            cannotMove.setPlayer(seeder.getPlayer());
+            List<Key> keysOnField = seeder.getKeys();
+            Key firstKey = keysOnField.get(0);
+            Key secondKey = keysOnField.get(1);
+            // Нужно, чтобы на поле остались красный и синий ключи (см. DifferentKeysSeeder)
+            keysMustStay.setKeys(firstKey, secondKey);
+            keysMustStay.setField(seeder.getField());
+            keysMustStay.setPlayer(seeder.getPlayer());
+
+            // Для проигрыша создаем дополнительный критерий, который проверяет,
+            // что заданные ключи не были взяты
+            KeyMustBeTakenCriterion redKeyTakenCriterion = new KeyMustBeTakenCriterion();
+            redKeyTakenCriterion.setPlayer(seeder.getPlayer());
+            redKeyTakenCriterion.setKey(firstKey);
+            KeyMustBeTakenCriterion blueKeyTakenCriterion = new KeyMustBeTakenCriterion();
+            blueKeyTakenCriterion.setPlayer(seeder.getPlayer());
+            blueKeyTakenCriterion.setKey(secondKey);
+            Criterion takeWrongKeysCriterion = new OrCriterion(redKeyTakenCriterion, blueKeyTakenCriterion);
+
+            _winCriterion = new AndCriterion(keysMustStay, playerOnTargetCell);
+            _loseCriterion = new OrCriterion(cannotMove, takeWrongKeysCriterion);
+
+            _game = new Game(_winCriterion, _loseCriterion, seeder);
         }
 
         private class KeyController implements KeyListener {

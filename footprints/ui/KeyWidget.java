@@ -24,7 +24,7 @@ public class KeyWidget extends CellItemWidget {
         return new Dimension(40, 40);
     }
 
-    private File getKeyImageFile() {
+    protected File getKeyImageFile() {
         return new File("src\\key.png");
     }
 

@@ -1,5 +1,6 @@
 package footprints.seeder;
 
+import footprints.Player;
 import footprints.field.Field;
 import footprints.items.Key;
 
@@ -8,6 +9,7 @@ import java.util.List;
 public abstract class Seeder {
     protected Field _field;
     protected List<Key> _keys;
+    protected Player _player;
 
     public Seeder(Field field) {
         _field = field;
@@ -20,6 +22,10 @@ public abstract class Seeder {
 
     public List<Key> getKeys() {
         return _keys;
+    }
+
+    public Player getPlayer() {
+        return _player;
     }
 
     private void run() {

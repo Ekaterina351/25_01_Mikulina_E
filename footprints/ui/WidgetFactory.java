@@ -5,7 +5,10 @@ import footprints.field.AbstractCell;
 import footprints.field.PassableCell;
 import footprints.field.TargetCell;
 import footprints.field.UnpassableCell;
+import footprints.items.BlueKey;
 import footprints.items.Key;
+import footprints.items.RedKey;
+import footprints.items.YellowKey;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
@@ -54,7 +57,12 @@ public class WidgetFactory {
             return _keys.get(key);
         }
 
-        KeyWidget keyWidget = new KeyWidget();
+        KeyWidget keyWidget = switch (key) {
+            case RedKey redKey -> new RedKeyWidget();
+            case BlueKey blueKey -> new BlueKeyWidget();
+            case YellowKey yellowKey -> new YellowKeyWidget();
+            default -> throw new IllegalArgumentException();
+        };
         _keys.put(key, keyWidget);
         return keyWidget;
     }
